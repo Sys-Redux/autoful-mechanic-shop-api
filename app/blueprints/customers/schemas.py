@@ -5,6 +5,7 @@ from marshmallow import fields
 
 class CustomerSchema(ma.SQLAlchemyAutoSchema):
     service_tickets = fields.Nested('ServiceTicketSchema', many=True, dump_only=True, exclude=('customer',))
+    password = fields.String(load_only=True, required=True)
 
     class Meta:
         model = Customer
