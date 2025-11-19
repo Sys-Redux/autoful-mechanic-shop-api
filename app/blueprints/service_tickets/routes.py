@@ -1,4 +1,4 @@
-from .schemas import service_ticket_schema, service_tickets_schema
+from .schemas import service_ticket_schema, service_tickets_schema,edit_service_ticket_schema
 from flask import request, jsonify
 from marshmallow import ValidationError
 from sqlalchemy import select
@@ -22,9 +22,16 @@ def create_service_ticket():
 # Get All Service Tickets
 @service_tickets_bp.route('/', methods=['GET'])
 def get_all_service_tickets():
-    query = select(ServiceTicket)
-    service_tickets = db.session.execute(query).scalars().all()
-    return service_tickets_schema.jsonify(service_tickets), 200
+    try:
+        page = int(request.args.get('page'))
+        per_page = int(request.args.get('per_page', 10))
+        query = select(ServiceTicket)
+        service_tickets = db.paginate(query, page=page, per_page=per_page)
+        return service_tickets_schema.jsonify(service_tickets), 200
+    except:
+        query = select(ServiceTicket)
+        service_tickets = db.session.execute(query).scalars().all()
+        return service_tickets_schema.jsonify(service_tickets), 200
 
 
 # Get a Specific Service Ticket
@@ -59,7 +66,7 @@ def assign_mechanic(ticket_id, mechanic_id):
 
 
 # Delete Mechanic from Service Ticket
-@service_tickets_bp.route('/<int:ticket_id>/remove-mechanic/<int:mechanic_id>', methods=['DELETE'])
+@service_tickets_bp.route('/<int:ticket_id>/remove-mechanic/<int:mechanic_id>', methods=['PUT'])
 def remove_mechanic(ticket_id, mechanic_id):
 
     service_ticket = db.session.get(ServiceTicket, ticket_id)
@@ -90,3 +97,30 @@ def delete_service_ticket(ticket_id):
     db.session.delete(service_ticket)
     db.session.commit()
     return jsonify({'message': 'Service Ticket deleted successfully'}), 200
+
+
+# Edit Service Ticket's Mechanics
+@service_tickets_bp.route('/<int:ticket_id>/edit-mechanics', methods=['PUT'])
+def edit_service_ticket_mechanics(ticket_id):
+    try:
+        data = edit_service_ticket_schema.load(request.json)
+    except ValidationError as e:
+        return jsonify(e.messages), 400
+
+    service_ticket = db.session.get(ServiceTicket, ticket_id)
+    if not service_ticket:
+        return jsonify({'error': 'Service Ticket not found'}), 404
+
+    # Add Mechanics
+    for mechanic_id in data['add_ids']:
+        mechanic = db.session.get(Mechanic, mechanic_id)
+        if mechanic and mechanic not in service_ticket.mechanics:
+            service_ticket.mechanics.append(mechanic)
+
+    # Remove Mechanics
+    for mechanic_id in data['remove_ids']:
+        mechanic = db.session.get(Mechanic, mechanic_id)
+        if mechanic and mechanic in service_ticket.mechanics:
+            service_ticket.mechanics.remove(mechanic)
+    db.session.commit()
+    return service_ticket_schema.jsonify(service_ticket), 200

@@ -53,11 +53,18 @@ def create_customer():
 
 # Get All Customers
 @customers_bp.route('/', methods=['GET'])
-@cache.cached(timeout=60)
+@cache.cached(timeout=1)
 def get_customers():
-    query = select(Customer)
-    customers = db.session.execute(query).scalars().all()
-    return customers_schema.jsonify(customers), 200
+    try:
+        page = int(request.args.get('page'))
+        per_page = int(request.args.get('per_page', 10))
+        query = select(Customer)
+        customers = db.paginate(query, page=page, per_page=per_page)
+        return customers_schema.jsonify(customers), 200
+    except:
+        query = select(Customer)
+        customers = db.session.execute(query).scalars().all()
+        return customers_schema.jsonify(customers), 200
 
 # Get a Specific Customer
 @customers_bp.route('/<int:customer_id>', methods=['GET'])
@@ -94,3 +101,12 @@ def delete_customer(user_id, customer_id):
     db.session.delete(customer)
     db.session.commit()
     return jsonify({'message': 'Customer deleted successfully'}), 200
+
+
+# List Customers With Most Tickets (Top 3)
+@customers_bp.route('/top', methods=['GET'])
+def get_top_customers():
+    query = select(Customer)
+    customers = db.session.execute(query).scalars().all()
+    customers.sort(key=lambda c: len(c.service_tickets), reverse=True)
+    return customers_schema.jsonify(customers[:3]), 200

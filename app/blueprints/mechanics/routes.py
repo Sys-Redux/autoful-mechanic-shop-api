@@ -27,9 +27,17 @@ def create_mechanic():
 # Get All Mechanics
 @mechanics_bp.route('/', methods=['GET'])
 def get_all_mechanics():
-    query = select(Mechanic)
-    mechanics = db.session.execute(query).scalars().all()
-    return mechanics_schema.jsonify(mechanics), 200
+    try:
+        page = int(request.args.get('page'))
+
+        per_page = int(request.args.get('per_page', 10))
+        query = select(Mechanic)
+        mechanics = db.paginate(query, page=page, per_page=per_page)
+        return mechanics_schema.jsonify(mechanics), 200
+    except:
+        query = select(Mechanic)
+        mechanics = db.session.execute(query).scalars().all()
+        return mechanics_schema.jsonify(mechanics), 200
 
 
 # Get a Specific Mechanic
@@ -67,3 +75,12 @@ def delete_mechanic(mechanic_id):
     db.session.delete(mechanic)
     db.session.commit()
     return jsonify({'message': 'Mechanic deleted successfully'}), 200
+
+
+# List Mechanics With Most Tickets (Top 3)
+@mechanics_bp.route('/top', methods=['GET'])
+def get_top_mechanics():
+    query = select(Mechanic)
+    mechanics = db.session.execute(query).scalars().all()
+    mechanics.sort(key=lambda m: len(m.service_tickets), reverse=True)
+    return mechanics_schema.jsonify(mechanics[:3]), 200
