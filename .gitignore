@@ -131,3 +131,5 @@ Thumbs.db
 # Config files with sensitive data
 config.py
 *.log
+
+ROADMAP.md

@@ -44,4 +44,5 @@ class Mechanic(Base):
     email: Mapped[str] = mapped_column(db.String(255), unique=True, nullable=False)
     phone: Mapped[str] = mapped_column(db.String(20), nullable=False)
     salary: Mapped[float] = mapped_column(db.Float, nullable=False)
+    password: Mapped[str] = mapped_column(db.String(255), nullable=False)
     service_tickets: Mapped[List['ServiceTicket']] = db.relationship(secondary=service_mechanics, back_populates='mechanics')

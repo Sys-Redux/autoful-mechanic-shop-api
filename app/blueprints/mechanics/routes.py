@@ -1,16 +1,54 @@
 from .schemas import mechanic_schema, mechanics_schema
+from app.utils.util import encode_mechanic_token, mechanic_token_required
 from flask import request, jsonify
 from marshmallow import ValidationError
 from sqlalchemy import select
 from app.models import Mechanic, db
+from app.extensions import limiter, cache
+from bcrypt import hashpw, gensalt, checkpw
 from . import mechanics_bp
 
 
-# Create A Mechanic
+# Login Mechanic
+@mechanics_bp.route('/login', methods=['POST'])
+@limiter.limit('5 per minute')
+def login_mechanic():
+    try:
+        credentials = request.json
+        email = credentials['email']
+        password = credentials['password']
+    except KeyError:
+        return jsonify({'message': 'Email and password are required.'}), 400
+
+    query = select(Mechanic).where(Mechanic.email == email)
+    mechanic = db.session.execute(query).scalar_one_or_none()
+
+    if mechanic and checkpw(password.encode('utf-8'), mechanic.password.encode('utf-8')):
+        auth_token = encode_mechanic_token(mechanic.id)
+
+        response = {
+            'status': 'success',
+            'message': 'Login successful',
+            'auth_token': auth_token,
+            'mechanic_id': mechanic.id
+        }
+        return jsonify(response), 200
+    return jsonify({'message': 'Invalid email or password.'}), 401
+
+
+# Create A Mechanic (W/ Password Hashing)
 @mechanics_bp.route('/', methods=['POST'])
+@limiter.limit("5 per hour")
 def create_mechanic():
     try:
-        new_mechanic = mechanic_schema.load(request.json)
+        mechanic_data = request.json
+        if 'password' in mechanic_data:
+            mechanic_data['password'] = hashpw(
+                mechanic_data['password'].encode('utf-8'),
+                gensalt()
+            ).decode('utf-8')
+
+        new_mechanic = mechanic_schema.load(mechanic_data)
     except ValidationError as e:
         return jsonify(e.messages), 400
 
@@ -24,9 +62,11 @@ def create_mechanic():
     return mechanic_schema.jsonify(new_mechanic), 201
 
 
-# Get All Mechanics
+# Get All Mechanics (W/ Pagination and Caching)
 @mechanics_bp.route('/', methods=['GET'])
-def get_all_mechanics():
+@cache.cached(timeout=60)
+@mechanic_token_required
+def get_all_mechanics(user_id):
     try:
         page = int(request.args.get('page'))
 
@@ -42,7 +82,8 @@ def get_all_mechanics():
 
 # Get a Specific Mechanic
 @mechanics_bp.route('/<int:mechanic_id>', methods=['GET'])
-def get_mechanic(mechanic_id):
+@mechanic_token_required
+def get_mechanic(user_id, mechanic_id):
     mechanic = db.session.get(Mechanic, mechanic_id)
     if mechanic:
         return mechanic_schema.jsonify(mechanic), 200
@@ -51,13 +92,25 @@ def get_mechanic(mechanic_id):
 
 # Update Mechanic
 @mechanics_bp.route('/<int:mechanic_id>', methods=['PUT'])
-def update_mechanic(mechanic_id):
+@mechanic_token_required
+def update_mechanic(user_id, mechanic_id):
+    # Mechanics Can Only Update Their Own Account
+    if int(user_id) != int(mechanic_id):
+        return jsonify({'error': 'Unauthorized'}), 403
+
     mechanic = db.session.get(Mechanic, mechanic_id)
     if not mechanic:
         return jsonify({'error': 'Mechanic not found'}), 404
 
     try:
-        mechanic_schema.load(request.json, instance=mechanic, partial=True)
+        mechanic_data = request.json
+        if 'password' in mechanic_data:
+            mechanic_data['password'] = hashpw(
+                mechanic_data['password'].encode('utf-8'),
+                gensalt()
+            ).decode('utf-8')
+
+        mechanic_schema.load(mechanic_data, instance=mechanic, partial=True)
     except ValidationError as e:
         return jsonify(e.messages), 400
 
@@ -67,7 +120,13 @@ def update_mechanic(mechanic_id):
 
 # Delete Mechanic
 @mechanics_bp.route('/<int:mechanic_id>', methods=['DELETE'])
-def delete_mechanic(mechanic_id):
+@limiter.limit("5 per hour")
+@mechanic_token_required
+def delete_mechanic(user_id, mechanic_id):
+    # Mechanics Can Only Delete Their Own Account
+    if int(user_id) != int(mechanic_id):
+        return jsonify({'error': 'Unauthorized'}), 403
+
     mechanic = db.session.get(Mechanic, mechanic_id)
     if not mechanic:
         return jsonify({'error': 'Mechanic not found'}), 404

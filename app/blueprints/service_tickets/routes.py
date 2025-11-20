@@ -1,14 +1,17 @@
-from .schemas import service_ticket_schema, service_tickets_schema,edit_service_ticket_schema
+from .schemas import service_ticket_schema, service_tickets_schema, edit_service_ticket_schema
+from app.utils.util import mechanic_token_required
 from flask import request, jsonify
 from marshmallow import ValidationError
 from sqlalchemy import select
 from app.models import ServiceTicket, Mechanic, db
+from app.extensions import limiter, cache
 from . import service_tickets_bp
 
 
-# Create A Service Ticket
+# Create A Service Ticket (Requires Mechanic Token)
 @service_tickets_bp.route('/', methods=['POST'])
-def create_service_ticket():
+@mechanic_token_required
+def create_service_ticket(user_id):
     try:
         new_service_ticket = service_ticket_schema.load(request.json)
     except ValidationError as e:
@@ -19,8 +22,9 @@ def create_service_ticket():
     return service_ticket_schema.jsonify(new_service_ticket), 201
 
 
-# Get All Service Tickets
+# Get All Service Tickets (With Pagination and Caching)
 @service_tickets_bp.route('/', methods=['GET'])
+@cache.cached(timeout=60, query_string=True)
 def get_all_service_tickets():
     try:
         page = int(request.args.get('page'))
@@ -43,9 +47,10 @@ def get_service_ticket(ticket_id):
     return jsonify({"message": "Service Ticket not found."}), 404
 
 
-# Assign Mechanic to Service Ticket
+# Assign Mechanic to Service Ticket (Requires Mechanic Token)
 @service_tickets_bp.route('/<int:ticket_id>/assign-mechanic/<int:mechanic_id>', methods=['PUT'])
-def assign_mechanic(ticket_id, mechanic_id):
+@mechanic_token_required
+def assign_mechanic(user_id, ticket_id, mechanic_id):
 
     service_ticket = db.session.get(ServiceTicket, ticket_id)
     if not service_ticket:
@@ -65,9 +70,10 @@ def assign_mechanic(ticket_id, mechanic_id):
     return service_ticket_schema.jsonify(service_ticket), 200
 
 
-# Delete Mechanic from Service Ticket
+# Delete Mechanic from Service Ticket (Requires Mechanic Token)
 @service_tickets_bp.route('/<int:ticket_id>/remove-mechanic/<int:mechanic_id>', methods=['PUT'])
-def remove_mechanic(ticket_id, mechanic_id):
+@mechanic_token_required
+def remove_mechanic(user_id, ticket_id, mechanic_id):
 
     service_ticket = db.session.get(ServiceTicket, ticket_id)
     if not service_ticket:
@@ -89,7 +95,9 @@ def remove_mechanic(ticket_id, mechanic_id):
 
 # Delete Service Ticket
 @service_tickets_bp.route('/<int:ticket_id>', methods=['DELETE'])
-def delete_service_ticket(ticket_id):
+@limiter.limit("5 per hour")
+@mechanic_token_required
+def delete_service_ticket(user_id, ticket_id):
     service_ticket = db.session.get(ServiceTicket, ticket_id)
     if not service_ticket:
         return jsonify({'error': 'Service Ticket not found'}), 404
@@ -101,7 +109,8 @@ def delete_service_ticket(ticket_id):
 
 # Edit Service Ticket's Mechanics
 @service_tickets_bp.route('/<int:ticket_id>/edit-mechanics', methods=['PUT'])
-def edit_service_ticket_mechanics(ticket_id):
+@mechanic_token_required
+def edit_service_ticket_mechanics(user_id, ticket_id):
     try:
         data = edit_service_ticket_schema.load(request.json)
     except ValidationError as e:
