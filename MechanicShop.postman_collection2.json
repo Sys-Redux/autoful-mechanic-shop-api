@@ -1,0 +1,500 @@
+{
+	"info": {
+		"_postman_id": "7671cae7-28e2-40f5-ad82-65b44b939a9e",
+		"name": "MechanicShop",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49187832",
+		"_collection_link": "https://edge-t-xyz-8858434.postman.co/workspace/Mechanic-Shop~2017cf01-e7fa-400e-a7da-3a6284ab6918/collection/49187832-7671cae7-28e2-40f5-ad82-65b44b939a9e?action=share&source=collection_link&creator=49187832"
+	},
+	"item": [
+		{
+			"name": "Customers",
+			"item": [
+				{
+					"name": "LoginCustomer",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "AddCustomer",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Kevin Ulysis\",\n    \"email\": \"mastertennis@gmail.com\",\n    \"phone\": \"19093781625\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{lh}}/customers",
+							"host": [
+								"{{lh}}"
+							],
+							"path": [
+								"customers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllCustomers",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "GetCustomer",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "GetTickets",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateCustomer",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Jimmy Doe\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{lh}}/customers/1",
+							"host": [
+								"{{lh}}"
+							],
+							"path": [
+								"customers",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteCustomer",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{lh}}/customers/5",
+							"host": [
+								"{{lh}}"
+							],
+							"path": [
+								"customers",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "TopCustomers",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Mechanics",
+			"item": [
+				{
+					"name": "LoginMechanic",
+					"request": {
+						"method": "POST",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "CreateMechanic",
+					"request": {
+						"method": "POST",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllMechanics",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "GetMechanic",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateMechanic",
+					"request": {
+						"method": "PUT",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteMechanic",
+					"request": {
+						"method": "DELETE",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "TopMechanics",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ServiceTickets",
+			"item": [
+				{
+					"name": "CreateTicket",
+					"request": {
+						"method": "POST",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "GetAllTickets",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "GetTicket",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "AssignMechanic",
+					"request": {
+						"method": "PUT",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "RemoveMechanic",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{lh}}/service_tickets/2/remove-mechanic/1",
+							"host": [
+								"{{lh}}"
+							],
+							"path": [
+								"service_tickets",
+								"2",
+								"remove-mechanic",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteTicket",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{lh}}/service_tickets/",
+							"host": [
+								"{{lh}}"
+							],
+							"path": [
+								"service_tickets",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "EditMechanics",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{lh}}/service_tickets/edit",
+							"host": [
+								"{{lh}}"
+							],
+							"path": [
+								"service_tickets",
+								"edit"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "AddInventory",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjM3MDk5MjAsImlhdCI6MTc2MzcwNjMyMCwic3ViIjoiMiIsInJvbGUiOiJtZWNoYW5pYyJ9.w6qPb5p5sWHPBVobI6uHY_U9TzTuDCcaZ-xoU_GTyWc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{lh}}/service_tickets/1/add-inventory",
+							"host": [
+								"{{lh}}"
+							],
+							"path": [
+								"service_tickets",
+								"1",
+								"add-inventory"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "RemoveInventory",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjM3MDk5MjAsImlhdCI6MTc2MzcwNjMyMCwic3ViIjoiMiIsInJvbGUiOiJtZWNoYW5pYyJ9.w6qPb5p5sWHPBVobI6uHY_U9TzTuDCcaZ-xoU_GTyWc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{lh}}/service_tickets/2/remove-inventory/2",
+							"host": [
+								"{{lh}}"
+							],
+							"path": [
+								"service_tickets",
+								"2",
+								"remove-inventory",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Inventory",
+			"item": [
+				{
+					"name": "CreateInventory",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"part_name\": \"Brake Pads\",\n    \"price\": 49.99,\n    \"quantity\": 20\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{lh}}/inventory",
+							"host": [
+								"{{lh}}"
+							],
+							"path": [
+								"inventory"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetInventoryAll",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "GetInventoryItem",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "UpdateInventoryItem",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjM3MDk5MjAsImlhdCI6MTc2MzcwNjMyMCwic3ViIjoiMiIsInJvbGUiOiJtZWNoYW5pYyJ9.w6qPb5p5sWHPBVobI6uHY_U9TzTuDCcaZ-xoU_GTyWc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"price\": 48.99\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{lh}}/inventory/4",
+							"host": [
+								"{{lh}}"
+							],
+							"path": [
+								"inventory",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DeleteInventoryItem",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{lh}}/inventory/5",
+							"host": [
+								"{{lh}}"
+							],
+							"path": [
+								"inventory",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "InventorySearch",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "LowStock",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjM3MDk5MjAsImlhdCI6MTc2MzcwNjMyMCwic3ViIjoiMiIsInJvbGUiOiJtZWNoYW5pYyJ9.w6qPb5p5sWHPBVobI6uHY_U9TzTuDCcaZ-xoU_GTyWc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{lh}}/inventory/low-stock?threshold=20",
+							"host": [
+								"{{lh}}"
+							],
+							"path": [
+								"inventory",
+								"low-stock"
+							],
+							"query": [
+								{
+									"key": "threshold",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "lh",
+			"value": "",
+			"type": "default"
+		}
+	]
+}

@@ -63,12 +63,9 @@ def update_inventory(user_id, inventory_id):
         return jsonify({"message": "Inventory part not found."}), 404
 
     try:
-        updated_data = inventory_schema.load(request.json, partial=True)
+        inventory_schema.load(request.json, instance=inventory, partial=True)
     except ValidationError as e:
         return jsonify(e.messages), 400
-
-    for key, value in updated_data.items():
-        setattr(inventory, key, value)
 
     db.session.commit()
     return inventory_schema.jsonify(inventory), 200
@@ -98,7 +95,7 @@ def delete_inventory(user_id, inventory_id):
 # Search Inventory Parts by Name
 @inventory_bp.route('/search', methods=['GET'])
 @mechanic_token_required
-def search_inventory():
+def search_inventory(user_id):
     part_name = request.args.get('part_name', '')
     query = select(Inventory).where(Inventory.part_name.ilike(f'%{part_name}%'))
     inventories = db.session.execute(query).scalars().all()
@@ -108,7 +105,7 @@ def search_inventory():
 # Get Low Stock Inventory Parts (Below Threshold (Default: 5))
 @inventory_bp.route('/low-stock', methods=['GET'])
 @mechanic_token_required
-def get_low_stock():
+def get_low_stock(user_id):
     threshold = int(request.args.get('threshold', 5))
     query = select(Inventory).where(Inventory.quantity_in_stock <= threshold).order_by(Inventory.quantity_in_stock)
     low_stock_parts = db.session.execute(query).scalars().all()

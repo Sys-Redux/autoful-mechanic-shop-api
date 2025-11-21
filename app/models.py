@@ -56,8 +56,8 @@ class Inventory(Base):
     __tablename__ = 'inventory'
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     part_name: Mapped[str] = mapped_column(db.String(255), nullable=False)
-    price: Mapped[float] = mapped_column(db.Float(minimum=0.01), nullable=False)
-    quantity_in_stock: Mapped[int] = mapped_column(db.Integer(minimum=0), nullable=False, default=0)
+    price: Mapped[float] = mapped_column(db.Float, nullable=False)
+    quantity_in_stock: Mapped[int] = mapped_column(db.Integer, nullable=False, default=0)
 
     service_inventories: Mapped[List['ServiceInventory']] = db.relationship(back_populates='inventory')
 

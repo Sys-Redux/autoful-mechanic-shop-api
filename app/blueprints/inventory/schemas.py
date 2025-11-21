@@ -3,6 +3,9 @@ from app.extensions import ma
 from marshmallow import fields, validate
 
 class InventorySchema(ma.SQLAlchemyAutoSchema):
+    part_name = fields.Str(required=True, validate=validate.Length(min=1, max=255))
+    price = fields.Float(required=True, validate=validate.Range(min=0.01))
+    quantity_in_stock = fields.Int(required=True, validate=validate.Range(min=0))
     class Meta:
         model = Inventory
         load_instance = True

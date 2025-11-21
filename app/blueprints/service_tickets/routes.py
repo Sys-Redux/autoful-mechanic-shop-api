@@ -144,7 +144,7 @@ def add_inventory_to_ticket(user_id, ticket_id):
     Request Body:
     {
         'inventory_id': int,
-        'quantity': int
+        'quantity_used': int
     }
     """
     try:
@@ -162,11 +162,11 @@ def add_inventory_to_ticket(user_id, ticket_id):
         return jsonify({'error': 'Inventory Part not found'}), 404
 
     # Sufficient Stock Available?
-    if inventory.quantity_in_stock < data['quantity']:
+    if inventory.quantity_in_stock < data['quantity_used']:
         return jsonify({
             'error': 'Insufficient stock',
             'part': inventory.part_name,
-            'requested': data['quantity'],
+            'requested': data['quantity_used'],
             'available': inventory.quantity_in_stock
         }), 400
 
@@ -180,8 +180,8 @@ def add_inventory_to_ticket(user_id, ticket_id):
 
     if existing:
         # Update Quantity
-        existing.quantity_used += data['quantity']
-        inventory.quantity_in_stock -= data['quantity'] # Deduct From Stock
+        existing.quantity_used += data['quantity_used']
+        inventory.quantity_in_stock -= data['quantity_used'] # Deduct From Stock
         db.session.commit()
         return jsonify({
             'message': f'Updated quantity for {inventory.part_name}',
@@ -194,21 +194,21 @@ def add_inventory_to_ticket(user_id, ticket_id):
         new_service_inventory = ServiceInventory(
             service_ticket_id=ticket_id,
             inventory_id=data['inventory_id'],
-            quantity_used=data['quantity']
+            quantity_used=data['quantity_used']
         )
-        inventory.quantity_in_stock -= data['quantity'] # Deduct From Stock
+        inventory.quantity_in_stock -= data['quantity_used'] # Deduct From Stock
         db.session.add(new_service_inventory)
         db.session.commit()
         return jsonify({
-            'message': f'Added {data['quantity']}x {inventory.part_name} to service ticket',
+            'message': f'Added {data['quantity_used']}x {inventory.part_name} to service ticket',
             'part': inventory.part_name,
-            'quantity_used': data['quantity'],
+            'quantity_used': data['quantity_used'],
             'stock_remaining': inventory.quantity_in_stock
         }), 201
 
 
 # Remove Inventory Part From Ticket (Restores Stock (Requires Mechanic Token))
-@service_tickets_bp.route('/<int:ticket_id>/remove-inventory/<int:inventory_id>', methods=['PUT'])
+@service_tickets_bp.route('/<int:ticket_id>/remove-inventory/<int:service_inventory_id>', methods=['PUT'])
 @mechanic_token_required
 def remove_inventory_from_ticket(user_id, ticket_id, service_inventory_id):
     service_inventory = db.session.get(ServiceInventory, service_inventory_id)
