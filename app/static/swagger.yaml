@@ -1,0 +1,332 @@
+swagger: '2.0'
+info:
+  title: "Autoful - Mechanic Shop API"
+  description: "An API for managing a mechanic shop, including customers, vehicles, and inventory."
+  version: "1.0.0"
+host: "localhost:5000"
+schemes:
+  - "http"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+
+securityDefinitions:
+  customerAuth:
+    type: "apiKey"
+    name: Authorization
+    in: header
+    description: "Customer JWT token. Format: 'Bearer {token}'. Obtain from /customers/login"
+  mechanicAuth:
+    type: "apiKey"
+    name: Authorization
+    in: header
+    description: "Mechanic JWT token. Format: 'Bearer {token}'. Obtain from /mechanics/login"
+
+paths:
+
+  /customers/login:
+    post:
+      tags:
+        - customers
+      summary: "Login endpoint, (generates token)"
+      description: "Validates customer credentials, generates and returns a customer specific token."
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Customer login credentials"
+          required: true
+          schema:
+            $ref: "#/definitions/LoginCredentials"
+      responses:
+        200:
+          description: "Successful login"
+          schema:
+            $ref: "#/definitions/LoginResponse"
+
+  /customers:
+    post:
+      tags:
+        - customers
+      summary: "Create a new customer"
+      description: "Creates a new customer with the provided details. Emails must be unique."
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Customer details"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateMemberPayload"
+      responses:
+        201:
+          description: "Customer created successfully"
+          schema:
+            $ref: "#/definitions/CreateMemberResponse"
+          examples:
+            application/json:
+              id: 1
+              name: "John Doe"
+              email: "john.doe@example.com"
+              phone: "123-456-7890"
+              password: "hashed_password"
+
+    get:
+      tags:
+        - customers
+      summary: "Get all customers"
+      description: "Retrieves a list of all customers in the system."
+      responses:
+        200:
+          description: "A list of customers"
+          schema:
+            $ref: "#/definitions/AllCustomers"
+
+  /customers/{customer_id}:
+    get:
+      tags:
+        - customers
+      summary: "Get a specific customer"
+      description: "Retrieves detailed information about a specific customer by ID."
+      parameters:
+        - in: "path"
+          name: "customer_id"
+          description: "ID of the customer to retrieve"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Customer retrieved successfully"
+          schema:
+            $ref: "#/definitions/CustomerResponse"
+        404:
+          description: "Customer not found"
+
+    put:
+      tags:
+        - customers
+      summary: "Update customer details"
+      description: "Updates the details of an existing customer. Requires customer authentication. Customers can only update their own account."
+      security:
+        - customerAuth: []
+      parameters:
+        - in: "path"
+          name: "customer_id"
+          description: "ID of the customer to update"
+          required: true
+          type: "integer"
+        - in: "body"
+          name: "body"
+          description: "Updated customer details. Accepts partial updates."
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateCustomerPayload"
+      responses:
+        200:
+          description: "Customer updated successfully"
+          schema:
+            $ref: "#/definitions/UpdateCustomerResponse"
+        403:
+          description: "Unauthorized - Customer can only update their own account"
+        404:
+          description: "Customer not found"
+
+    delete:
+      tags:
+        - customers
+      summary: "Delete a customer"
+      description: "Deletes an existing customer. Requires customer authentication. Customers can only delete their own account."
+      security:
+        - customerAuth: []
+      parameters:
+        - in: "path"
+          name: "customer_id"
+          description: "ID of the customer to delete"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Customer deleted successfully"
+          schema:
+            $ref: "#/definitions/DeleteCustomerResponse"
+        403:
+          description: "Unauthorized - Customer can only delete their own account"
+        404:
+          description: "Customer not found"
+
+  /customers/my-tickets:
+    get:
+      tags:
+        - customers
+      summary: "Get my service tickets"
+      description: "Retrieves all service tickets for the authenticated customer. Requires customer authentication."
+      security:
+        - customerAuth: []
+      responses:
+        200:
+          description: "Service tickets retrieved successfully"
+          schema:
+            $ref: "#/definitions/ServiceTicketsList"
+        401:
+          description: "Authentication required"
+
+  /customers/top:
+    get:
+      tags:
+        - customers
+      summary: "Get top customers"
+      description: "Retrieves the top 3 customers with the most service tickets."
+      responses:
+        200:
+          description: "Top customers retrieved successfully"
+          schema:
+            $ref: "#/definitions/AllCustomers"
+
+definitions:
+
+  LoginCredentials:
+    type: "object"
+    properties:
+      email:
+        type: "string"
+      password:
+        type: "string"
+    required:
+      - "email"
+      - "password"
+
+  LoginResponse:
+    type: "object"
+    properties:
+      token:
+        type: "string"
+      message:
+        type: "string"
+      status:
+        type: "string"
+
+  CreateMemberPayload:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      email:
+        type: "string"
+      phone:
+        type: "string"
+      password:
+        type: "string"
+    required:
+      - "name"
+      - "email"
+      - "phone"
+      - "password"
+
+  CreateMemberResponse:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+      email:
+        type: "string"
+      phone:
+        type: "string"
+
+  AllCustomers:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        name:
+          type: "string"
+        email:
+          type: "string"
+        phone:
+          type: "string"
+
+  UpdateCustomerPayload:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      email:
+        type: "string"
+      phone:
+        type: "string"
+      password:
+        type: "string"
+
+  UpdateCustomerResponse:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+      email:
+        type: "string"
+      phone:
+        type: "string"
+
+  DeleteCustomerResponse:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+
+  CustomerResponse:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+      email:
+        type: "string"
+      phone:
+        type: "string"
+      service_tickets:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            id:
+              type: "integer"
+            VIN:
+              type: "string"
+            service_date:
+              type: "string"
+              format: "date"
+            service_desc:
+              type: "string"
+
+  ServiceTicketsList:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        VIN:
+          type: "string"
+        service_date:
+          type: "string"
+          format: "date"
+        service_desc:
+          type: "string"
+        customer_id:
+          type: "integer"
+        mechanics:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              id:
+                type: "integer"
+              name:
+                type: "string"
+              email:
+                type: "string"
