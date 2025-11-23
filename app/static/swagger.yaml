@@ -181,6 +181,587 @@ paths:
           schema:
             $ref: "#/definitions/AllCustomers"
 
+  /mechanics/login:
+    post:
+      tags:
+        - mechanics
+      summary: "Mechanic login endpoint"
+      description: "Validates mechanic credentials, generates and returns a mechanic specific token."
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Mechanic login credentials"
+          required: true
+          schema:
+            $ref: "#/definitions/LoginCredentials"
+      responses:
+        200:
+          description: "Successful login"
+          schema:
+            $ref: "#/definitions/MechanicLoginResponse"
+        400:
+          description: "Email and password are required"
+        401:
+          description: "Invalid email or password"
+
+  /mechanics:
+    post:
+      tags:
+        - mechanics
+      summary: "Create a new mechanic"
+      description: "Creates a new mechanic with the provided details. Emails must be unique. Password is hashed before storage."
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Mechanic details"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateMechanicPayload"
+      responses:
+        201:
+          description: "Mechanic created successfully"
+          schema:
+            $ref: "#/definitions/CreateMechanicResponse"
+        400:
+          description: "Validation error or mechanic with this email already exists"
+
+    get:
+      tags:
+        - mechanics
+      summary: "Get all mechanics"
+      description: "Retrieves a list of all mechanics in the system. Requires mechanic authentication. Supports pagination."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "query"
+          name: "page"
+          description: "Page number for pagination"
+          required: false
+          type: "integer"
+        - in: "query"
+          name: "per_page"
+          description: "Number of items per page (default: 10)"
+          required: false
+          type: "integer"
+      responses:
+        200:
+          description: "A list of mechanics"
+          schema:
+            $ref: "#/definitions/AllMechanics"
+        401:
+          description: "Authentication required"
+
+  /mechanics/{mechanic_id}:
+    get:
+      tags:
+        - mechanics
+      summary: "Get a specific mechanic"
+      description: "Retrieves detailed information about a specific mechanic by ID. Requires mechanic authentication."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "path"
+          name: "mechanic_id"
+          description: "ID of the mechanic to retrieve"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Mechanic retrieved successfully"
+          schema:
+            $ref: "#/definitions/MechanicResponse"
+        401:
+          description: "Authentication required"
+        404:
+          description: "Mechanic not found"
+
+    put:
+      tags:
+        - mechanics
+      summary: "Update mechanic details"
+      description: "Updates the details of an existing mechanic. Requires mechanic authentication. Mechanics can only update their own account. Accepts partial updates."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "path"
+          name: "mechanic_id"
+          description: "ID of the mechanic to update"
+          required: true
+          type: "integer"
+        - in: "body"
+          name: "body"
+          description: "Updated mechanic details. Accepts partial updates."
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateMechanicPayload"
+      responses:
+        200:
+          description: "Mechanic updated successfully"
+          schema:
+            $ref: "#/definitions/UpdateMechanicResponse"
+        401:
+          description: "Authentication required"
+        403:
+          description: "Unauthorized - Mechanic can only update their own account"
+        404:
+          description: "Mechanic not found"
+
+    delete:
+      tags:
+        - mechanics
+      summary: "Delete a mechanic"
+      description: "Deletes an existing mechanic. Requires mechanic authentication. Mechanics can only delete their own account."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "path"
+          name: "mechanic_id"
+          description: "ID of the mechanic to delete"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Mechanic deleted successfully"
+          schema:
+            $ref: "#/definitions/DeleteMechanicResponse"
+        401:
+          description: "Authentication required"
+        403:
+          description: "Unauthorized - Mechanic can only delete their own account"
+        404:
+          description: "Mechanic not found"
+
+  /mechanics/top:
+    get:
+      tags:
+        - mechanics
+      summary: "Get top mechanics"
+      description: "Retrieves the top 3 mechanics with the most service tickets assigned."
+      responses:
+        200:
+          description: "Top mechanics retrieved successfully"
+          schema:
+            $ref: "#/definitions/AllMechanics"
+
+  /service_tickets:
+    post:
+      tags:
+        - service_tickets
+      summary: "Create a service ticket"
+      description: "Creates a new service ticket. Requires mechanic authentication."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Service ticket details"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateServiceTicketPayload"
+      responses:
+        201:
+          description: "Service ticket created successfully"
+          schema:
+            $ref: "#/definitions/ServiceTicketResponse"
+        400:
+          description: "Validation error"
+        401:
+          description: "Authentication required"
+
+    get:
+      tags:
+        - service_tickets
+      summary: "Get all service tickets"
+      description: "Retrieves a list of all service tickets. Supports pagination and caching."
+      parameters:
+        - in: "query"
+          name: "page"
+          description: "Page number for pagination"
+          required: false
+          type: "integer"
+        - in: "query"
+          name: "per_page"
+          description: "Number of items per page (default: 10)"
+          required: false
+          type: "integer"
+      responses:
+        200:
+          description: "A list of service tickets"
+          schema:
+            $ref: "#/definitions/ServiceTicketsList"
+
+  /service_tickets/{ticket_id}:
+    get:
+      tags:
+        - service_tickets
+      summary: "Get a specific service ticket"
+      description: "Retrieves detailed information about a specific service ticket by ID."
+      parameters:
+        - in: "path"
+          name: "ticket_id"
+          description: "ID of the service ticket to retrieve"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Service ticket retrieved successfully"
+          schema:
+            $ref: "#/definitions/ServiceTicketResponse"
+        404:
+          description: "Service Ticket not found"
+
+    delete:
+      tags:
+        - service_tickets
+      summary: "Delete a service ticket"
+      description: "Deletes a service ticket. Requires mechanic authentication. Rate limited to 5 per hour."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "path"
+          name: "ticket_id"
+          description: "ID of the service ticket to delete"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Service ticket deleted successfully"
+          schema:
+            $ref: "#/definitions/DeleteServiceTicketResponse"
+        401:
+          description: "Authentication required"
+        404:
+          description: "Service Ticket not found"
+
+  /service_tickets/{ticket_id}/assign-mechanic/{mechanic_id}:
+    put:
+      tags:
+        - service_tickets
+      summary: "Assign mechanic to service ticket"
+      description: "Assigns a mechanic to a service ticket. Requires mechanic authentication."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "path"
+          name: "ticket_id"
+          description: "ID of the service ticket"
+          required: true
+          type: "integer"
+        - in: "path"
+          name: "mechanic_id"
+          description: "ID of the mechanic to assign"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Mechanic assigned successfully"
+          schema:
+            $ref: "#/definitions/ServiceTicketResponse"
+        400:
+          description: "Mechanic already assigned to this service ticket"
+        401:
+          description: "Authentication required"
+        404:
+          description: "Service Ticket or Mechanic not found"
+
+  /service_tickets/{ticket_id}/remove-mechanic/{mechanic_id}:
+    put:
+      tags:
+        - service_tickets
+      summary: "Remove mechanic from service ticket"
+      description: "Removes a mechanic from a service ticket. Requires mechanic authentication."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "path"
+          name: "ticket_id"
+          description: "ID of the service ticket"
+          required: true
+          type: "integer"
+        - in: "path"
+          name: "mechanic_id"
+          description: "ID of the mechanic to remove"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Mechanic removed successfully"
+          schema:
+            $ref: "#/definitions/ServiceTicketResponse"
+        400:
+          description: "Mechanic not assigned to this service ticket"
+        401:
+          description: "Authentication required"
+        404:
+          description: "Service Ticket or Mechanic not found"
+
+  /service_tickets/{ticket_id}/edit-mechanics:
+    put:
+      tags:
+        - service_tickets
+      summary: "Bulk edit mechanics on service ticket"
+      description: "Add and remove multiple mechanics from a service ticket in one operation. Requires mechanic authentication."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "path"
+          name: "ticket_id"
+          description: "ID of the service ticket"
+          required: true
+          type: "integer"
+        - in: "body"
+          name: "body"
+          description: "Mechanic IDs to add and remove"
+          required: true
+          schema:
+            $ref: "#/definitions/EditMechanicsPayload"
+      responses:
+        200:
+          description: "Mechanics updated successfully"
+          schema:
+            $ref: "#/definitions/ServiceTicketResponse"
+        400:
+          description: "Validation error"
+        401:
+          description: "Authentication required"
+        404:
+          description: "Service Ticket not found"
+
+  /service_tickets/{ticket_id}/add-inventory:
+    post:
+      tags:
+        - service_tickets
+      summary: "Add inventory part to service ticket"
+      description: "Adds an inventory part to a service ticket. Automatically deducts from stock. Requires mechanic authentication."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "path"
+          name: "ticket_id"
+          description: "ID of the service ticket"
+          required: true
+          type: "integer"
+        - in: "body"
+          name: "body"
+          description: "Inventory part and quantity to add"
+          required: true
+          schema:
+            $ref: "#/definitions/AddInventoryToTicketPayload"
+      responses:
+        200:
+          description: "Quantity updated for existing part"
+          schema:
+            $ref: "#/definitions/AddInventoryToTicketResponse"
+        201:
+          description: "Part added to service ticket successfully"
+          schema:
+            $ref: "#/definitions/AddInventoryToTicketResponse"
+        400:
+          description: "Validation error or insufficient stock"
+        401:
+          description: "Authentication required"
+        404:
+          description: "Service Ticket or Inventory Part not found"
+
+  /service_tickets/{ticket_id}/remove-inventory/{service_inventory_id}:
+    put:
+      tags:
+        - service_tickets
+      summary: "Remove inventory part from service ticket"
+      description: "Removes an inventory part from a service ticket. Automatically restores stock. Requires mechanic authentication."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "path"
+          name: "ticket_id"
+          description: "ID of the service ticket"
+          required: true
+          type: "integer"
+        - in: "path"
+          name: "service_inventory_id"
+          description: "ID of the service inventory record to remove"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Part removed and stock restored successfully"
+          schema:
+            $ref: "#/definitions/RemoveInventoryFromTicketResponse"
+        400:
+          description: "Service Inventory does not belong to the specified Service Ticket"
+        401:
+          description: "Authentication required"
+        404:
+          description: "Service Inventory record not found"
+
+  /inventory:
+    post:
+      tags:
+        - inventory
+      summary: "Create inventory part"
+      description: "Creates a new inventory part. Requires mechanic authentication."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "Inventory part details"
+          required: true
+          schema:
+            $ref: "#/definitions/CreateInventoryPayload"
+      responses:
+        201:
+          description: "Inventory part created successfully"
+          schema:
+            $ref: "#/definitions/InventoryResponse"
+        400:
+          description: "Validation error"
+        401:
+          description: "Authentication required"
+
+    get:
+      tags:
+        - inventory
+      summary: "Get all inventory parts"
+      description: "Retrieves a list of all inventory parts, ordered by part name. Supports pagination and caching."
+      parameters:
+        - in: "query"
+          name: "page"
+          description: "Page number for pagination"
+          required: false
+          type: "integer"
+        - in: "query"
+          name: "per_page"
+          description: "Number of items per page (default: 10)"
+          required: false
+          type: "integer"
+      responses:
+        200:
+          description: "A list of inventory parts"
+          schema:
+            $ref: "#/definitions/AllInventory"
+
+  /inventory/{inventory_id}:
+    get:
+      tags:
+        - inventory
+      summary: "Get a specific inventory part"
+      description: "Retrieves detailed information about a specific inventory part by ID."
+      parameters:
+        - in: "path"
+          name: "inventory_id"
+          description: "ID of the inventory part to retrieve"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Inventory part retrieved successfully"
+          schema:
+            $ref: "#/definitions/InventoryResponse"
+        404:
+          description: "Inventory part not found"
+
+    put:
+      tags:
+        - inventory
+      summary: "Update inventory part"
+      description: "Updates an inventory part. Requires mechanic authentication. Accepts partial updates."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "path"
+          name: "inventory_id"
+          description: "ID of the inventory part to update"
+          required: true
+          type: "integer"
+        - in: "body"
+          name: "body"
+          description: "Updated inventory part details. Accepts partial updates."
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateInventoryPayload"
+      responses:
+        200:
+          description: "Inventory part updated successfully"
+          schema:
+            $ref: "#/definitions/InventoryResponse"
+        400:
+          description: "Validation error"
+        401:
+          description: "Authentication required"
+        404:
+          description: "Inventory part not found"
+
+    delete:
+      tags:
+        - inventory
+      summary: "Delete inventory part"
+      description: "Deletes an inventory part. Cannot delete parts that have been used on service tickets. Requires mechanic authentication. Rate limited to 10 per hour."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "path"
+          name: "inventory_id"
+          description: "ID of the inventory part to delete"
+          required: true
+          type: "integer"
+      responses:
+        200:
+          description: "Inventory part deleted successfully"
+          schema:
+            $ref: "#/definitions/DeleteInventoryResponse"
+        400:
+          description: "Cannot delete part that has been used on a service ticket"
+        401:
+          description: "Authentication required"
+        404:
+          description: "Inventory part not found"
+
+  /inventory/search:
+    get:
+      tags:
+        - inventory
+      summary: "Search inventory parts by name"
+      description: "Searches for inventory parts by name using case-insensitive partial matching. Requires mechanic authentication."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "query"
+          name: "part_name"
+          description: "Part name to search for (partial match)"
+          required: false
+          type: "string"
+      responses:
+        200:
+          description: "Search results"
+          schema:
+            $ref: "#/definitions/AllInventory"
+        401:
+          description: "Authentication required"
+
+  /inventory/low-stock:
+    get:
+      tags:
+        - inventory
+      summary: "Get low stock inventory parts"
+      description: "Retrieves inventory parts that are at or below the specified stock threshold. Requires mechanic authentication."
+      security:
+        - mechanicAuth: []
+      parameters:
+        - in: "query"
+          name: "threshold"
+          description: "Stock threshold (default: 5)"
+          required: false
+          type: "integer"
+          default: 5
+      responses:
+        200:
+          description: "Low stock parts retrieved successfully"
+          schema:
+            $ref: "#/definitions/LowStockResponse"
+        401:
+          description: "Authentication required"
+
 definitions:
 
   LoginCredentials:
@@ -330,3 +911,365 @@ definitions:
                 type: "string"
               email:
                 type: "string"
+
+  MechanicLoginResponse:
+    type: "object"
+    properties:
+      status:
+        type: "string"
+      message:
+        type: "string"
+      auth_token:
+        type: "string"
+      mechanic_id:
+        type: "integer"
+
+  CreateMechanicPayload:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      email:
+        type: "string"
+      phone:
+        type: "string"
+      salary:
+        type: "number"
+        format: "float"
+      password:
+        type: "string"
+    required:
+      - "name"
+      - "email"
+      - "phone"
+      - "salary"
+      - "password"
+
+  CreateMechanicResponse:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+      email:
+        type: "string"
+      phone:
+        type: "string"
+      salary:
+        type: "number"
+        format: "float"
+
+  AllMechanics:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        name:
+          type: "string"
+        email:
+          type: "string"
+        phone:
+          type: "string"
+        salary:
+          type: "number"
+          format: "float"
+
+  MechanicResponse:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+      email:
+        type: "string"
+      phone:
+        type: "string"
+      salary:
+        type: "number"
+        format: "float"
+      service_tickets:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            id:
+              type: "integer"
+            VIN:
+              type: "string"
+            service_date:
+              type: "string"
+              format: "date"
+            service_desc:
+              type: "string"
+
+  UpdateMechanicPayload:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      email:
+        type: "string"
+      phone:
+        type: "string"
+      salary:
+        type: "number"
+        format: "float"
+      password:
+        type: "string"
+
+  UpdateMechanicResponse:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+      email:
+        type: "string"
+      phone:
+        type: "string"
+      salary:
+        type: "number"
+        format: "float"
+
+  DeleteMechanicResponse:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+
+  CreateServiceTicketPayload:
+    type: "object"
+    properties:
+      VIN:
+        type: "string"
+        maxLength: 17
+      service_date:
+        type: "string"
+        format: "date"
+      service_desc:
+        type: "string"
+        maxLength: 360
+      customer_id:
+        type: "integer"
+    required:
+      - "VIN"
+      - "service_date"
+      - "service_desc"
+      - "customer_id"
+
+  ServiceTicketResponse:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      VIN:
+        type: "string"
+      service_date:
+        type: "string"
+        format: "date"
+      service_desc:
+        type: "string"
+      customer_id:
+        type: "integer"
+      customer:
+        type: "object"
+        properties:
+          id:
+            type: "integer"
+          name:
+            type: "string"
+          email:
+            type: "string"
+          phone:
+            type: "string"
+      mechanics:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            id:
+              type: "integer"
+            name:
+              type: "string"
+            email:
+              type: "string"
+            phone:
+              type: "string"
+            salary:
+              type: "number"
+              format: "float"
+      service_inventories:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            id:
+              type: "integer"
+            service_ticket_id:
+              type: "integer"
+            inventory_id:
+              type: "integer"
+            quantity_used:
+              type: "integer"
+            inventory:
+              type: "object"
+              properties:
+                id:
+                  type: "integer"
+                part_name:
+                  type: "string"
+                price:
+                  type: "number"
+                  format: "float"
+                quantity_in_stock:
+                  type: "integer"
+
+  DeleteServiceTicketResponse:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+
+  EditMechanicsPayload:
+    type: "object"
+    properties:
+      add_ids:
+        type: "array"
+        items:
+          type: "integer"
+      remove_ids:
+        type: "array"
+        items:
+          type: "integer"
+    required:
+      - "add_ids"
+      - "remove_ids"
+
+  AddInventoryToTicketPayload:
+    type: "object"
+    properties:
+      inventory_id:
+        type: "integer"
+      quantity_used:
+        type: "integer"
+        minimum: 1
+    required:
+      - "inventory_id"
+      - "quantity_used"
+
+  AddInventoryToTicketResponse:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+      part:
+        type: "string"
+      quantity_used:
+        type: "integer"
+      stock_remaining:
+        type: "integer"
+
+  RemoveInventoryFromTicketResponse:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+      part:
+        type: "string"
+      quantity_restored:
+        type: "integer"
+      stock_remaining:
+        type: "integer"
+
+  CreateInventoryPayload:
+    type: "object"
+    properties:
+      part_name:
+        type: "string"
+        maxLength: 255
+      price:
+        type: "number"
+        format: "float"
+        minimum: 0.01
+      quantity_in_stock:
+        type: "integer"
+        minimum: 0
+    required:
+      - "part_name"
+      - "price"
+      - "quantity_in_stock"
+
+  InventoryResponse:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      part_name:
+        type: "string"
+      price:
+        type: "number"
+        format: "float"
+      quantity_in_stock:
+        type: "integer"
+
+  AllInventory:
+    type: "array"
+    items:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+        part_name:
+          type: "string"
+        price:
+          type: "number"
+          format: "float"
+        quantity_in_stock:
+          type: "integer"
+
+  UpdateInventoryPayload:
+    type: "object"
+    properties:
+      part_name:
+        type: "string"
+        maxLength: 255
+      price:
+        type: "number"
+        format: "float"
+        minimum: 0.01
+      quantity_in_stock:
+        type: "integer"
+        minimum: 0
+
+  DeleteInventoryResponse:
+    type: "object"
+    properties:
+      message:
+        type: "string"
+
+  LowStockResponse:
+    type: "object"
+    properties:
+      threshold:
+        type: "integer"
+      count:
+        type: "integer"
+      parts:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            id:
+              type: "integer"
+            part_name:
+              type: "string"
+            price:
+              type: "number"
+              format: "float"
+            quantity_in_stock:
+              type: "integer"
