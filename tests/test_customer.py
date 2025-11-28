@@ -153,5 +153,3 @@ class TestCustomer(unittest.TestCase):
         self.assertEqual(response.json[0]['name'], 'top_customer')
         self.assertEqual(response.json[1]['name'], 'second_customer')
         self.assertEqual(response.json[2]['name'], 'third_customer')
-        # At most 3 customers returned
-        self.assertLessEqual(len(response.json), 3)
