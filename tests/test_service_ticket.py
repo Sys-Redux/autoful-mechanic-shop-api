@@ -9,13 +9,13 @@ class TestServiceTicket(unittest.TestCase):
     def setUp(self):
         self.app = create_app('TestingConfig')
         hashed_pw = hashpw('mechanicpass'.encode('utf-8'), gensalt()).decode('utf-8')
-        service = ServiceTicket(VIN='1HGCM82633A123456', service_date=date(2024, 10, 1), service_desc='Initial service', customer_id=1)
-        mechanic = Mechanic(name='service_mechanic', email='service_mechanic@email.com', phone='1234567890', salary=50000.0, password=hashed_pw)
+        self.service = ServiceTicket(VIN='1HGCM82633A123456', service_date=date(2024, 10, 1), service_desc='Initial service', customer_id=1)
+        self.mechanic = Mechanic(name='service_mechanic', email='service_mechanic@email.com', phone='1234567890', salary=50000.0, password=hashed_pw)
         with self.app.app_context():
             db.drop_all()
             db.create_all()
-            db.session.add(mechanic)
-            db.session.add(service)
+            db.session.add(self.mechanic)
+            db.session.add(self.service)
             db.session.commit()
             self.token = encode_mechanic_token(1)
             self.client = self.app.test_client()
