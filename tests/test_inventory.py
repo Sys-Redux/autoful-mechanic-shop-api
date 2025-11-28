@@ -1,5 +1,5 @@
 from app import create_app
-from app.models import Mechanic, Inventory, ServiceInventory, db
+from app.models import Mechanic, Inventory, db
 from datetime import date
 from app.utils.util import encode_mechanic_token
 from bcrypt import hashpw, gensalt
