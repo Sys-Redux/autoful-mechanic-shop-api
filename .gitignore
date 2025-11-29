@@ -128,8 +128,8 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 
-# Config files with sensitive data
-config.py
+# Environment files with sensitive data
+.env
 *.log
 
 ROADMAP.md
