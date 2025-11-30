@@ -2,9 +2,10 @@ from datetime import datetime, timedelta, timezone
 from jose import jwt
 from functools import wraps
 from flask import request, jsonify
+import os
 import jose
 
-SECRET_KEY = "ThisIsASuperSecretKeyToProtectTheJWT"
+SECRET_KEY = os.environ.get('SECRET_KEY') or 'ThisIsASuperSecretKeyToProtextTheGoods'
 
 def encode_token(user_id, role='customer'):
     payload = {
