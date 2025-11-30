@@ -3,9 +3,9 @@ info:
   title: "Autoful - Mechanic Shop API"
   description: "An API for managing a mechanic shop, including customers, vehicles, and inventory."
   version: "1.0.0"
-host: "localhost:5000"
+host: "autoful-mechanic-shop-api.onrender.com"
 schemes:
-  - "http"
+  - "https"
 consumes:
   - "application/json"
 produces:
