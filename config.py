@@ -1,7 +1,4 @@
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 class DevelopmentConfig:
     DEBUG = True
@@ -16,3 +13,4 @@ class TestingConfig:
 class ProductionConfig:
     SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
     CACHE_TYPE = 'SimpleCache'
+    SECRET_KEY = os.environ.get('SECRET_KEY')
