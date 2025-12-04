@@ -1,4 +1,5 @@
 from app.utils.util import encode_customer_token, customer_token_required
+from app.utils.firebase_admin import set_user_claims
 from .schemas import customer_schema, customers_schema
 from app.blueprints.service_tickets.schemas import service_tickets_schema
 from flask import request, jsonify
@@ -30,7 +31,9 @@ def login_customer():
         response = {
             'status': 'success',
             'message': 'Login successful',
-            'auth_token': auth_token
+            'auth_token': auth_token,
+            'customer_id': customer.id,
+            'name': customer.name
         }
         return jsonify(response), 200
     return jsonify({"message": "Invalid email or password."}), 401
@@ -57,8 +60,26 @@ def create_customer():
     if existing_customer:
         return jsonify({"message": "Customer with this email already exists."}), 400
 
+    # Check Firebase UID Uniqueness
+    firebase_uid = customer_data.get('firebase_uid')
+    if firebase_uid:
+        existing_firebase = Customer.query.filter_by(firebase_uid=firebase_uid).first()
+        if existing_firebase:
+            return jsonify({"message": "Customer with this Firebase UID already exists."}), 400
+
     db.session.add(new_customer)
     db.session.commit()
+
+    # Set Firebase custom claims if firebase_uid provided
+    if firebase_uid:
+        claims_set = set_user_claims(
+            firebase_uid=firebase_uid,
+            role='customer',
+            db_id=new_customer.id
+        )
+        if not claims_set:
+            print(f'Warning: Failed to set Firebase claims for user {new_customer.id}')
+
     return customer_schema.jsonify(new_customer), 201
 
 
@@ -90,8 +111,9 @@ def get_customer(customer_id):
 # Get My Service Tickets (Requires Customer Token)
 @customers_bp.route('/my-tickets', methods=['GET'])
 @customer_token_required
-def get_my_tickets(customer_id):
-    query = select(ServiceTicket).where(ServiceTicket.customer_id == customer_id)
+def get_my_tickets():
+    customer = request.current_customer
+    query = select(ServiceTicket).where(ServiceTicket.customer_id == customer.id)
     tickets = db.session.execute(query).scalars().all()
     return service_tickets_schema.jsonify(tickets), 200
 
@@ -99,9 +121,9 @@ def get_my_tickets(customer_id):
 # Update Customer
 @customers_bp.route('/<int:customer_id>', methods=['PUT'])
 @customer_token_required
-def update_customer(user_id, customer_id):
+def update_customer(customer_id):
     # Customer Can Only Update Their Own Account
-    if int(user_id) != int(customer_id):
+    if request.current_customer.id != customer_id:
         return jsonify({'error': 'Unauthorized'}), 403
 
     customer = db.session.get(Customer, customer_id)
@@ -127,8 +149,8 @@ def update_customer(user_id, customer_id):
 @customers_bp.route('/<int:customer_id>', methods=['DELETE'])
 @limiter.limit("5 per hour")
 @customer_token_required
-def delete_customer(user_id, customer_id):
-    if int(user_id) != int(customer_id):
+def delete_customer(customer_id):
+    if request.current_customer.id != customer_id:
         return jsonify({'error': 'Unauthorized'}), 403
 
     customer = db.session.get(Customer, customer_id)
