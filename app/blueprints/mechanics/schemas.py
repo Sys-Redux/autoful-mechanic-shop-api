@@ -7,6 +7,7 @@ class MechanicSchema(ma.SQLAlchemyAutoSchema):
     password = fields.String(load_only=True, required=True)
     email = fields.Email(required=True)
     name = fields.String(required=True, validate=validate.Length(min=1))
+    firebase_uid = fields.String(load_only=True, required=False)
 
     class Meta:
         model = Mechanic

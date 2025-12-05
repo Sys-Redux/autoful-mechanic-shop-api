@@ -1,4 +1,6 @@
 from flask import Flask
+from flask_cors import CORS
+from .utils.firebase_admin import initialize_firebase
 from .extensions import ma, limiter, cache
 from .models import db
 from .blueprints.customers import customers_bp
@@ -22,11 +24,23 @@ def create_app(config_name):
     app = Flask(__name__)
     app.config.from_object(f'config.{config_name}')
 
+    # Init Firebase Admin SDK
+    try:
+        initialize_firebase()
+    except Exception as e:
+        app.logger.warning(f'Firebase not initialized: {e}')
+
     # Init Extensions
     ma.init_app(app)
     db.init_app(app)
     limiter.init_app(app)
     cache.init_app(app)
+
+    # Configure CORS
+    CORS(app, origins=[
+        'http://localhost:3000',
+        'https://autoful.vercel.app',
+    ], supports_credentials=True)
 
     # Register Blueprints
     app.register_blueprint(customers_bp, url_prefix='/customers')

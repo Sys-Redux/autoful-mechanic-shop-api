@@ -11,7 +11,7 @@ from . import inventory_bp
 # Create Inventory Part (Requires Mechanic Token)
 @inventory_bp.route('/', methods=['POST'])
 @mechanic_token_required
-def create_inventory(user_id):
+def create_inventory():
     """
     Request Body:
     {
@@ -57,7 +57,7 @@ def get_inventory(inventory_id):
 # Update Inventory Part (Requires Mechanic Token)
 @inventory_bp.route('/<int:inventory_id>', methods=['PUT'])
 @mechanic_token_required
-def update_inventory(user_id, inventory_id):
+def update_inventory(inventory_id):
     inventory = db.session.get(Inventory, inventory_id)
     if not inventory:
         return jsonify({"message": "Inventory part not found."}), 404
@@ -75,7 +75,7 @@ def update_inventory(user_id, inventory_id):
 @inventory_bp.route('/<int:inventory_id>', methods=['DELETE'])
 @limiter.limit('10 per hour')
 @mechanic_token_required
-def delete_inventory(user_id, inventory_id):
+def delete_inventory(inventory_id):
     inventory = db.session.get(Inventory, inventory_id)
     if not inventory:
         return jsonify({"message": "Inventory part not found."}), 404
@@ -95,7 +95,7 @@ def delete_inventory(user_id, inventory_id):
 # Search Inventory Parts by Name
 @inventory_bp.route('/search', methods=['GET'])
 @mechanic_token_required
-def search_inventory(user_id):
+def search_inventory():
     part_name = request.args.get('part_name', '')
     query = select(Inventory).where(Inventory.part_name.ilike(f'%{part_name}%'))
     inventories = db.session.execute(query).scalars().all()
@@ -105,7 +105,7 @@ def search_inventory(user_id):
 # Get Low Stock Inventory Parts (Below Threshold (Default: 5))
 @inventory_bp.route('/low-stock', methods=['GET'])
 @mechanic_token_required
-def get_low_stock(user_id):
+def get_low_stock():
     threshold = int(request.args.get('threshold', 5))
     query = select(Inventory).where(Inventory.quantity_in_stock <= threshold).order_by(Inventory.quantity_in_stock)
     low_stock_parts = db.session.execute(query).scalars().all()

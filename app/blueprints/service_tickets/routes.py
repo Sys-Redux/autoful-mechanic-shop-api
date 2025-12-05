@@ -12,7 +12,7 @@ from . import service_tickets_bp
 # Create A Service Ticket (Requires Mechanic Token)
 @service_tickets_bp.route('/', methods=['POST'])
 @mechanic_token_required
-def create_service_ticket(user_id):
+def create_service_ticket():
     try:
         new_service_ticket = service_ticket_schema.load(request.json)
     except ValidationError as e:
@@ -51,7 +51,7 @@ def get_service_ticket(ticket_id):
 # Assign Mechanic to Service Ticket (Requires Mechanic Token)
 @service_tickets_bp.route('/<int:ticket_id>/assign-mechanic/<int:mechanic_id>', methods=['PUT'])
 @mechanic_token_required
-def assign_mechanic(user_id, ticket_id, mechanic_id):
+def assign_mechanic(ticket_id, mechanic_id):
 
     service_ticket = db.session.get(ServiceTicket, ticket_id)
     if not service_ticket:
@@ -74,7 +74,7 @@ def assign_mechanic(user_id, ticket_id, mechanic_id):
 # Delete Mechanic from Service Ticket (Requires Mechanic Token)
 @service_tickets_bp.route('/<int:ticket_id>/remove-mechanic/<int:mechanic_id>', methods=['PUT'])
 @mechanic_token_required
-def remove_mechanic(user_id, ticket_id, mechanic_id):
+def remove_mechanic(ticket_id, mechanic_id):
 
     service_ticket = db.session.get(ServiceTicket, ticket_id)
     if not service_ticket:
@@ -98,7 +98,7 @@ def remove_mechanic(user_id, ticket_id, mechanic_id):
 @service_tickets_bp.route('/<int:ticket_id>', methods=['DELETE'])
 @limiter.limit("5 per hour")
 @mechanic_token_required
-def delete_service_ticket(user_id, ticket_id):
+def delete_service_ticket(ticket_id):
     service_ticket = db.session.get(ServiceTicket, ticket_id)
     if not service_ticket:
         return jsonify({'error': 'Service Ticket not found'}), 404
@@ -111,7 +111,7 @@ def delete_service_ticket(user_id, ticket_id):
 # Edit Service Ticket's Mechanics
 @service_tickets_bp.route('/<int:ticket_id>/edit-mechanics', methods=['PUT'])
 @mechanic_token_required
-def edit_service_ticket_mechanics(user_id, ticket_id):
+def edit_service_ticket_mechanics(ticket_id):
     try:
         data = edit_service_ticket_schema.load(request.json)
     except ValidationError as e:
@@ -139,7 +139,7 @@ def edit_service_ticket_mechanics(user_id, ticket_id):
 # Add Inventory Part To Ticket (Requires Mechanic Token)
 @service_tickets_bp.route('/<int:ticket_id>/add-inventory', methods=['POST'])
 @mechanic_token_required
-def add_inventory_to_ticket(user_id, ticket_id):
+def add_inventory_to_ticket(ticket_id):
     """
     Request Body:
     {
@@ -210,7 +210,7 @@ def add_inventory_to_ticket(user_id, ticket_id):
 # Remove Inventory Part From Ticket (Restores Stock (Requires Mechanic Token))
 @service_tickets_bp.route('/<int:ticket_id>/remove-inventory/<int:service_inventory_id>', methods=['PUT'])
 @mechanic_token_required
-def remove_inventory_from_ticket(user_id, ticket_id, service_inventory_id):
+def remove_inventory_from_ticket(ticket_id, service_inventory_id):
     service_inventory = db.session.get(ServiceInventory, service_inventory_id)
     if not service_inventory:
         return jsonify({'error': 'Service Inventory record not found'}), 404
