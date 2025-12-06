@@ -47,10 +47,10 @@ def is_firebase_initialized() -> bool:
 def verify_firebase_token(id_token: str) -> dict | None:
     """
     Verify a Firebase ID token & return decoded claims.
-    
+
     Args:
         id_token: The Firebase ID token (JWT) from Authorization header
-        
+
     Returns:
         dict w/ user info ('uid', 'email', 'email_verified', etc.)
         or None if invalid/expired or Firebase not initialized
@@ -58,7 +58,7 @@ def verify_firebase_token(id_token: str) -> dict | None:
     # Don't attempt verification if Firebase isn't initialized
     if not _initialized:
         return None
-    
+
     try:
         decoded_token = auth.verify_id_token(id_token)
         return decoded_token
@@ -83,16 +83,16 @@ def set_user_claims(firebase_uid: str, role: str, db_id: int) -> bool:
     """
     Set custom claims for a Firebase user.
     Links the Firebase user to the database and sets their role.
-    
+
     Must be called after creating a user in database.
-    
+
     Note:
         User must sign out and back in to see new claims in their token.
     """
     if not _initialized:
         print('Firebase not initialized - cannot set claims')
         return False
-    
+
     try:
         auth.set_custom_user_claims(firebase_uid, {
             'role': role,
@@ -111,7 +111,7 @@ def get_user_claims(firebase_uid: str) -> dict | None:
     """Get custom claims for a Firebase user."""
     if not _initialized:
         return None
-    
+
     try:
         user = auth.get_user(firebase_uid)
         return user.custom_claims or {}

@@ -4,7 +4,7 @@ from functools import wraps
 from flask import request, jsonify
 import os
 import jose
-from app.models import Customer, Mechanic
+from app.models import Customer, Mechanic, db
 
 SECRET_KEY = os.environ.get('SECRET_KEY') or 'ThisIsASuperSecretKeyToProtextTheGoods'
 
@@ -131,7 +131,7 @@ def customer_token_required(f):
         if not db_id:
             return jsonify({'message': 'User not properly registered'}), 403
 
-        customer = Customer.query.get(db_id)
+        customer = db.session.get(Customer, db_id)
         if not customer:
             return jsonify({'message': 'Customer not found'}), 404
 
@@ -168,7 +168,7 @@ def mechanic_token_required(f):
         if not db_id:
             return jsonify({'message': 'User not properly registered'}), 403
 
-        mechanic = Mechanic.query.get(db_id)
+        mechanic = db.session.get(Mechanic, db_id)
         if not mechanic:
             return jsonify({'message': 'Mechanic not found'}), 404
 
