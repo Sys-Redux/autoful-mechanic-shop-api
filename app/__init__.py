@@ -24,11 +24,11 @@ def create_app(config_name):
     app = Flask(__name__)
     app.config.from_object(f'config.{config_name}')
 
-    # Init Firebase Admin SDK
-    try:
-        initialize_firebase()
-    except Exception as e:
-        app.logger.warning(f'Firebase not initialized: {e}')
+    # Init Firebase Admin SDK (optional - will work without it for testing)
+    if initialize_firebase():
+        app.logger.info('Firebase Admin SDK initialized successfully')
+    else:
+        app.logger.warning('Firebase not initialized - using legacy JWT auth only')
 
     # Init Extensions
     ma.init_app(app)
