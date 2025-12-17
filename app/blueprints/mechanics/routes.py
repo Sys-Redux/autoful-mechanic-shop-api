@@ -61,7 +61,8 @@ def create_mechanic():
 
     firebase_uid = mechanic_data.get('firebase_uid')
     if firebase_uid:
-        existing_firebase = Mechanic.query.filter_by(firebase_uid=firebase_uid).first()
+        firebase_query = select(Mechanic).where(Mechanic.firebase_uid == firebase_uid)
+        existing_firebase = db.session.execute(firebase_query).scalar_one_or_none()
         if existing_firebase:
             return jsonify({"message": "Mechanic with this Firebase UID already exists."}), 400
 

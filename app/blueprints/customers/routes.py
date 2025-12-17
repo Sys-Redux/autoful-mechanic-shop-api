@@ -63,7 +63,8 @@ def create_customer():
     # Check Firebase UID Uniqueness
     firebase_uid = customer_data.get('firebase_uid')
     if firebase_uid:
-        existing_firebase = Customer.query.filter_by(firebase_uid=firebase_uid).first()
+        firebase_query = select(Customer).where(Customer.firebase_uid == firebase_uid)
+        existing_firebase = db.session.execute(firebase_query).scalar_one_or_none()
         if existing_firebase:
             return jsonify({"message": "Customer with this Firebase UID already exists."}), 400
 
