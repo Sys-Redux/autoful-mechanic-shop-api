@@ -22,6 +22,7 @@ swaggerui_blueprint = get_swaggerui_blueprint(
 
 def create_app(config_name):
     app = Flask(__name__)
+    app.url_map.strict_slashes = False
     app.config.from_object(f'config.{config_name}')
 
     # Init Firebase Admin SDK (optional - will work without it for testing)
