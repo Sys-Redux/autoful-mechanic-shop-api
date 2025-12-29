@@ -18,7 +18,7 @@ class Customer(Base):
     password: Mapped[str] = mapped_column(db.String(255), nullable=False)
     firebase_uid: Mapped[str | None] = mapped_column(db.String(128), unique=True, nullable=True)
 
-    service_tickets: Mapped[List["ServiceTicket"]] = db.relationship(back_populates='customer')
+    service_tickets: Mapped[List["ServiceTicket"]] = db.relationship(back_populates='customer', cascade='all, delete-orphan')
 
 
 service_mechanics = db.Table(

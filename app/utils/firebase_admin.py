@@ -121,3 +121,37 @@ def get_user_claims(firebase_uid: str) -> dict | None:
     except Exception as e:
         print(f'Error fetching user claims for {firebase_uid}: {e}')
         return None
+
+
+def delete_firebase_user(firebase_uid: str) -> bool:
+    """
+    Delete a Firebase user account.
+
+    Should be called when deleting a user from the database to ensure
+    their Firebase account is also removed.
+
+    Args:
+        firebase_uid: The Firebase UID of the user to delete
+
+    Returns:
+        True if deleted successfully, False otherwise
+    """
+    if not _initialized:
+        print('Firebase not initialized - cannot delete user')
+        return False
+
+    if not firebase_uid:
+        print('No Firebase UID provided - skipping Firebase deletion')
+        return True  # Not an error, user may not have Firebase account
+
+    try:
+        auth.delete_user(firebase_uid)
+        print(f'Successfully deleted Firebase user: {firebase_uid}')
+        return True
+    except auth.UserNotFoundError:
+        # User already doesn't exist in Firebase - not an error
+        print(f'Firebase user not found (already deleted?): {firebase_uid}')
+        return True
+    except Exception as e:
+        print(f'Error deleting Firebase user {firebase_uid}: {e}')
+        return False

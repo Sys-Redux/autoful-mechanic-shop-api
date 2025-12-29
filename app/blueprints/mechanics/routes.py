@@ -1,6 +1,6 @@
 from .schemas import mechanic_schema, mechanics_schema
 from app.utils.util import encode_mechanic_token, mechanic_token_required
-from app.utils.firebase_admin import set_user_claims
+from app.utils.firebase_admin import set_user_claims, delete_firebase_user
 from flask import request, jsonify
 from marshmallow import ValidationError
 from sqlalchemy import select
@@ -150,8 +150,17 @@ def delete_mechanic(mechanic_id):
     if not mechanic:
         return jsonify({'error': 'Mechanic not found'}), 404
 
+    # Store Firebase UID before deleting the mechanic record
+    firebase_uid = mechanic.firebase_uid
+
+    # Delete mechanic from database
     db.session.delete(mechanic)
     db.session.commit()
+
+    # Delete the Firebase user account
+    if firebase_uid:
+        delete_firebase_user(firebase_uid)
+
     return jsonify({'message': 'Mechanic deleted successfully'}), 200
 
 

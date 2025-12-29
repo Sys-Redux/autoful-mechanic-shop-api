@@ -1,5 +1,5 @@
 from app.utils.util import encode_customer_token, customer_token_required
-from app.utils.firebase_admin import set_user_claims
+from app.utils.firebase_admin import set_user_claims, delete_firebase_user
 from .schemas import customer_schema, customers_schema
 from app.blueprints.service_tickets.schemas import service_tickets_schema
 from flask import request, jsonify
@@ -158,8 +158,17 @@ def delete_customer(customer_id):
     if not customer:
         return jsonify({'error': 'Customer not found'}), 404
 
+    # Store Firebase UID before deleting the customer record
+    firebase_uid = customer.firebase_uid
+
+    # Delete customer from database (cascade will delete service_tickets and service_inventories)
     db.session.delete(customer)
     db.session.commit()
+
+    # Delete the Firebase user account
+    if firebase_uid:
+        delete_firebase_user(firebase_uid)
+
     return jsonify({'message': 'Customer deleted successfully'}), 200
 
 
