@@ -14,5 +14,16 @@ class MechanicSchema(ma.SQLAlchemyAutoSchema):
         load_instance = True
         include_fk = True
 
+
+class TopMechanicSchema(ma.Schema):
+    """Schema for top mechanics leaderboard with ticket count"""
+    id = fields.Integer(dump_only=True)
+    name = fields.String()
+    email = fields.String()
+    phone = fields.String()
+    ticket_count = fields.Integer()
+
+
 mechanic_schema = MechanicSchema()
 mechanics_schema = MechanicSchema(many=True)
+top_mechanics_schema = TopMechanicSchema(many=True)

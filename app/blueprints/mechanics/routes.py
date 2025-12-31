@@ -170,4 +170,17 @@ def get_top_mechanics():
     query = select(Mechanic)
     mechanics = db.session.execute(query).scalars().all()
     mechanics.sort(key=lambda m: len(m.service_tickets), reverse=True)
-    return mechanics_schema.jsonify(mechanics[:3]), 200
+
+    # Build response with ticket counts
+    top_mechanics = [
+        {
+            'id': m.id,
+            'name': m.name,
+            'email': m.email,
+            'phone': m.phone,
+            'ticket_count': len(m.service_tickets)
+        }
+        for m in mechanics[:3]
+    ]
+
+    return jsonify(top_mechanics), 200
