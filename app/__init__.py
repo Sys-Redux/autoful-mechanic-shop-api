@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from .utils.firebase_admin import initialize_firebase
-from .extensions import ma, limiter, cache
+from .extensions import ma, limiter, cache, migrate
 from .models import db
 from .blueprints.customers import customers_bp
 from .blueprints.mechanics import mechanics_bp
@@ -36,6 +36,7 @@ def create_app(config_name):
     db.init_app(app)
     limiter.init_app(app)
     cache.init_app(app)
+    migrate.init_app(app, db)
 
     # Configure CORS
     CORS(app, origins=[
