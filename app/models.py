@@ -112,6 +112,7 @@ class Mechanic(Base):
     salary: Mapped[float] = mapped_column(db.Float, nullable=False)
     password: Mapped[str] = mapped_column(db.String(255), nullable=False)
     firebase_uid: Mapped[str | None] = mapped_column(db.String(128), unique=True, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(db.DateTime, default=datetime.now)
 
     # Relationships
     service_tickets: Mapped[List['ServiceTicket']] = db.relationship(secondary=service_mechanics, back_populates='mechanics')
@@ -126,12 +127,17 @@ class Inventory(Base):
     part_name: Mapped[str] = mapped_column(db.String(255), nullable=False)
     price: Mapped[float] = mapped_column(db.Float, nullable=False)
     quantity_in_stock: Mapped[int] = mapped_column(db.Integer, nullable=False, default=0)
+    cost: Mapped[float] = mapped_column(db.Float, default=0.0)
+    category: Mapped[str | None] = mapped_column(db.String(50), nullable=True)
+    part_number: Mapped[str | None] = mapped_column(db.String(100), unique=True, nullable=True)
+    reorder_point: Mapped[int] = mapped_column(db.Integer, default=5)
+    created_at: Mapped[datetime] = mapped_column(db.DateTime, default=datetime.now)
 
     # Relationships
     service_inventories: Mapped[List['ServiceInventory']] = db.relationship(back_populates='inventory')
 
 # ============================================================================
-# SERVICE INVENTORY
+# SERVICE INVENTORY (Junction: Ticket <-> Parts Used)
 # ============================================================================
 
 class ServiceInventory(Base):
@@ -140,6 +146,8 @@ class ServiceInventory(Base):
     service_ticket_id: Mapped[int] = mapped_column(db.ForeignKey('service_tickets.id'), nullable=False)
     inventory_id: Mapped[int] = mapped_column(db.ForeignKey('inventory.id'), nullable=False)
     quantity_used: Mapped[int] = mapped_column(db.Integer, nullable=False, default=1)
+    price_at_service: Mapped[float | None] = mapped_column(db.Float, nullable=True)
+    cost_at_service: Mapped[float | None] = mapped_column(db.Float, nullable=True)
 
     # Relationships
     service_ticket: Mapped['ServiceTicket'] = db.relationship(back_populates='service_inventories')
